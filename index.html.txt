@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Hashyies Bio</title>
+  <meta name="title" content="Hashyies Home :D">
+  <meta name="description" content="Just a bio">
+  <meta property="og:title" content="Hashyies Bio">
+  <meta property="og:description" content="Just a bio">
+  <meta property="og:image" content="https://bio.hashy.ml/imgs/grill.png">
+  <meta property="og:url" content="https://bio.hashy.ml">
+  <meta name="twitter:title" content="Hashyies Bio">
+  <meta name="twitter:description" content="Just a bio">
+  <meta name="twitter:image" content="https://bio.hashy.ml/imgs/grill.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="welcome-text">Yo! Welcome to... Well here</div>
+      <div class="bio-text">
+        <p>As a passionate developer, my journey began with learning Java. However, my curiosity and love for the craft
+          soon led me to explore and master a wide array of skills. Today, I stand proud of my accomplishments and the
+          place I have reached.</p>
+
+        <p>If there is one thing I have learned, it is this: to achieve your goals, you must remain steadfast in your
+          pursuit. Do not let hardships or obstacles deter you or make you doubt your abilities. Once you set your mind
+          to something, you possess the power to overcome any challenge and achieve anything you desire.</p>
+      </div>
+
+      <div class="contact-box">
+        <div class="contact-title">Contact me</div>
+        <div class="contact-items">
+          <img class="contact-icon" src="svgs/discord.svg" alt="Discord"
+            onclick="addWindow('Discord', 'My Discord username is: @hashys')">
+          <img class="contact-icon" src="svgs/github.svg" alt="GitHub"
+            onclick="addWindow('GitHub', '[Click here to visit my GitHub!](https://github.com/Hashyies)')">
+          <img class="contact-icon" src="svgs/email.svg" alt="Email"
+            onclick="addWindow('Email', 'My Email is: [contact@hashy.ml](mailto:contact@hashy.ml)')">
+        </div>
+      </div>
+
+      <img class="grill-img" src="./imgs/grill.png" alt="Grill">
+    </div>
+    <div class="sky"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </div>
+</body>
+
+</html>
