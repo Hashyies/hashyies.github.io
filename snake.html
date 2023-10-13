@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SNAKE GAME</title>
+    <style>
+        #game-board {
+            position: relative;
+            height: 80vmin;
+            width: 80vmin;
+            border: 1px solid white;
+        }
+        .dot {
+            position: absolute;
+            height: 2vmin;
+            width: 2vmin;
+            background: white;
+        }
+        #apple {
+            background: red;
+        }
+    </style>
+</head>
+<body style="background-color: black; color: white; text-align: center;">
+    <h1>SNAKE GAME</h1>
+    <button id="startButton" onclick="startGame()">Start</button>
+    <div id="game-board"></div>
+
+    <script>
+        var dotSize = 2; // in vmin
+        var gameBoardSize = 80; // in vmin
+        var direction = 'Right';
+        var snake = [{top: 0, left: 0}, {top: 0, left: dotSize}, {top: 0, left: dotSize * 2}];
+        var apple = null;
+
+        function createDot(top, left, id, color) {
+            var dot = document.createElement('div');
+            dot.classList.add('dot');
+            dot.id = id;
+            dot.style.top = `${top}vmin`;
+            dot.style.left = `${left}vmin`;
+            dot.style.background = color;
+            return dot;
+        }
+
+        function updateGameBoard() {
+            var gameBoard = document.getElementById('game-board');
+
+            // clear the game board
+            while (gameBoard.firstChild) {
+                gameBoard.firstChild.remove();
+            }
+
+            // draw the snake
+            snake.forEach(function(dot, index) {
+                gameBoard.appendChild(createDot(dot.top, dot.left, 'snake-dot-' + index, 'white'));
+            });
+
+            // draw the apple
+            if (apple == null) {
+                apple = {top: Math.floor(Math.random() * gameBoardSize / dotSize) * dotSize, left: Math.floor(Math.random() * gameBoardSize / dotSize) * dotSize};
+            }
+            gameBoard.appendChild(createDot(apple.top, apple.left, 'apple', 'red'));
+        }
+
+        function startGame() {
+            // Randomly initialize the snake's position and direction
+            snake = [{top: Math.floor(Math.random() * gameBoardSize / dotSize) * dotSize, left: Math.floor(Math.random() * gameBoardSize / dotSize) * dotSize}];
+            
+            for (var i = 1; i < 3; i++) {
+                snake.push({top: snake[0].top, left: snake[0].left - i * dotSize});
+            }
+
+            direction = ['Left', 'Up', 'Right', 'Down'][Math.floor(Math.random() * 4)];
+
+            updateGameBoard();
+            
+            if (typeof moveSnakeInterval !== 'undefined') clearInterval(moveSnakeInterval);
+            
+            moveSnakeInterval = setInterval(moveSnake, 100);
+        }
+
+        function moveSnake() {
+            var head = Object.assign({}, snake[0]); // copy head
+            switch(direction) {
+                case 'Left':
+                    head.left -= dotSize;
+                    break;
+                case 'Up':
+                    head.top -= dotSize;
+                    break;
+                case 'Right':
+                    head.left += dotSize;
+                    break;
+                case 'Down':
+                    head.top += dotSize;
+                    break;
+            }
+
+            // wrap around the edges
+            if (head.top < 0) head.top = gameBoardSize - dotSize;
+            if (head.top === gameBoardSize) head.top = 0;
+            if (head.left < 0) head.left = gameBoardSize - dotSize;
+            if (head.left === gameBoardSize) head.left = 0;
+
+            // check for self collision
+            if (snake.find(dot => dot.top === head.top && dot.left === head.left)) {
+                alert('Game Over!');
+                return startGame();
+            }
+
+            // check for apple collision
+            if (head.top === apple.top && head.left === apple.left) {
+                apple = null; // eat the apple
+                snake.push({}); // add new tail segment
+            } else {
+                snake.pop(); // remove tail
+            }
+
+            snake.unshift(head); // new head
+
+            updateGameBoard();
+        }
+
+        window.addEventListener('keydown', function(e) {
+          switch(e.key) {
+              case 'ArrowUp':
+                  if (direction !== 'Down') direction = 'Up';
+                  break;
+              case 'ArrowDown':
+                  if (direction !== 'Up') direction = 'Down';
+                  break;
+              case 'ArrowLeft':
+                  if (direction !== 'Right') direction = 'Left';
+                  break;
+              case 'ArrowRight':
+                  if (direction !== 'Left') direction = 'Right';
+                  break;
+          }
+      });
+    </script>
+</body>
+</html>
