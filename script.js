@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     addWindow("Error", `An error occurred while fetching commit data: ${error.message}`);
   }
   addWindow("I just made a new bot!", "Want to try your luck? [Then invite my bot by risking images!](https://discord.com/oauth2/authorize?client_id=1026903036959932416&permissions=8&scope=applications.commands%20bot) or [Check out the code behind it!](https://github.com/Hashyies/MediaRoulette)");
-  addWindow("Hey you! Read me!", "Want to collaborate or invite me to any project? Contact me on Discord or Email so we could discuss the details! I am happy to help free of cost if it is an open source project!");
+  addWindow("Hey you! Read me!", "Want to collaborate or invite me to any project? Contact me on Discord or Email so we could discuss the details! I do comissions free of charge at the moment!");
 });
 
 async function getTotalCommitsLastMonth(owner) {
