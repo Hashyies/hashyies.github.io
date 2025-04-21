@@ -1,0 +1,1072 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exams n' Timers</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Bubblegum+Sans&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background-color: #f8f8f8;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Background canvas for animations */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: gentle-float 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes gentle-float {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-8px);
+            }
+        }
+
+        h1 {
+            font-family: 'Bubblegum Sans', cursive;
+            font-size: 3.8rem;
+            color: #000;
+            text-shadow: 3px 3px 0 #fff, 5px 5px 0 #000;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .exam-container {
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 24px;
+            box-shadow: 0 0 0 3px #000, 8px 8px 0 #000;
+            overflow: hidden;
+            transform-origin: center;
+            animation: subtle-pulse 5s ease-in-out infinite;
+        }
+
+        @keyframes subtle-pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.01);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .exam-list {
+            list-style-type: none;
+        }
+
+        .exam-item {
+            padding: 1.5rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.4s ease;
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+            background-color: transparent;
+        }
+
+        .exam-item:last-child {
+            border-bottom: none;
+        }
+
+        .exam-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .exam-date {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 170px;
+            position: relative;
+            padding-right: 1.5rem;
+        }
+
+        .date-indicator {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #000;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .exam-info {
+            flex-grow: 1;
+            padding-left: 1rem;
+        }
+
+        .exam-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .timer-container {
+            min-width: 120px;
+            text-align: center;
+            background-color: #000;
+            color: #fff;
+            padding: 0.6rem;
+            border-radius: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            animation: soft-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes soft-glow {
+            from {
+                box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.3);
+            }
+            to {
+                box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* New styles for the action buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        .action-button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 3px 3px 0 #333;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 3px 6px 0 #333;
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 1px 1px 0 #333;
+        }
+
+        .action-button svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        /* Discord webhook section */
+        .discord-section {
+            margin-top: 2rem;
+            border: 3px solid #000;
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.92);
+        }
+
+        .discord-toggle {
+            background-color: #000;
+            color: #fff;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .toggle-arrow {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-arrow.open {
+            transform: rotate(90deg);
+        }
+
+        .discord-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .discord-content.open {
+            max-height: 400px;
+        }
+
+        .discord-form {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-family: 'Comic Neue', cursive;
+            font-size: 1rem;
+        }
+
+        .send-webhook-btn {
+            background-color: #5865F2;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 3px 3px 0 #333;
+            margin-top: 1rem;
+        }
+
+        .send-webhook-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 3px 6px 0 #333;
+        }
+
+        .webhook-status {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .webhook-status.success {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+            display: block;
+        }
+
+        .webhook-status.error {
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            display: block;
+        }
+
+        /* Image preview */
+        #image-preview-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .preview-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .close-preview {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        #image-preview {
+            max-width: 100%;
+            border: 5px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-buttons {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .preview-button {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Comic Neue', cursive;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 3px 3px 0 #000;
+        }
+
+        .preview-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 3px 6px 0 #000;
+        }
+
+        /* Make design responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.2rem;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .exam-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.8rem;
+            }
+
+            .exam-date {
+                width: 100%;
+                margin-bottom: 0.2rem;
+                border-left: 3px solid #000;
+                padding-left: 0.5rem;
+            }
+
+            .date-indicator {
+                display: none;
+            }
+
+            .exam-info {
+                padding-left: 0;
+                width: 100%;
+            }
+
+            .timer-container {
+                align-self: flex-end;
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem 0.8rem;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                text-shadow: 2px 2px 0 #fff, 3px 3px 0 #000;
+            }
+
+            .exam-container {
+                box-shadow: 0 0 0 2px #000, 5px 5px 0 #000;
+            }
+
+            .exam-item {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div class="container">
+        <header>
+            <h1>Exams n' Timers</h1>
+        </header>
+        
+        <div class="exam-container">
+            <ul class="exam-list" id="exam-list">
+                <!-- Exam items will be populated by JavaScript -->
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button id="generate-image" class="action-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>
+                Generate Image
+            </button>
+        </div>
+
+        <div class="discord-section">
+            <div class="discord-toggle" id="discord-toggle">
+                <span>Discord Webhook Settings</span>
+                <svg class="toggle-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </div>
+            <div class="discord-content" id="discord-content">
+                <div class="discord-form">
+                    <div class="form-group">
+                        <label for="webhook-url">Discord Webhook URL</label>
+                        <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="webhook-username">Display Name (optional)</label>
+                        <input type="text" id="webhook-username" placeholder="Exam Reminder Bot">
+                    </div>
+                    <button id="send-webhook" class="send-webhook-btn">Send to Discord</button>
+                    <div id="webhook-status" class="webhook-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image preview modal -->
+    <div id="image-preview-container">
+        <div class="preview-content">
+            <button class="close-preview" id="close-preview">&times;</button>
+            <img id="image-preview" alt="Exam Schedule">
+            <div class="preview-buttons">
+                <button id="download-image" class="preview-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Download Image
+                </button>
+                <button id="share-discord" class="preview-button" style="background-color: #5865F2; color: #fff;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.05-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.04.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.03.01.06.02.09.01 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.83 2.12-1.89 2.12z"/></svg>
+                    Share to Discord
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exam data
+        const exams = [
+            {
+                date: "Tuesday, 29 April",
+                name: "Physics Paper 1",
+                timestamp: new Date(2025, 3, 29, 9, 0).getTime()
+            },
+            {
+                date: "Wednesday, 30 April",
+                name: "Physics Paper 2",
+                timestamp: new Date(2025, 3, 30, 9, 0).getTime()
+            },
+            {
+                date: "Tuesday, 6 May",
+                name: "Arabic Paper 1 & Paper 2",
+                timestamp: new Date(2025, 4, 6, 9, 0).getTime()
+            },
+            {
+                date: "Wednesday, 7 May",
+                name: "Arabic Listening",
+                timestamp: new Date(2025, 4, 7, 9, 0).getTime()
+            },
+            {
+                date: "Thursday, 8 May",
+                name: "English Paper 1",
+                timestamp: new Date(2025, 4, 8, 9, 0).getTime()
+            },
+            {
+                date: "Friday, 9 May",
+                name: "English Paper 2",
+                timestamp: new Date(2025, 4, 9, 9, 0).getTime()
+            },
+            {
+                date: "Monday, 12 May",
+                name: "Biology Paper 1",
+                timestamp: new Date(2025, 4, 12, 9, 0).getTime()
+            },
+            {
+                date: "Tuesday, 13 May",
+                name: "Biology Paper 2",
+                timestamp: new Date(2025, 4, 13, 9, 0).getTime()
+            },
+            {
+                date: "Thursday, 15 May",
+                name: "Math Paper 1",
+                timestamp: new Date(2025, 4, 15, 9, 0).getTime()
+            },
+            {
+                date: "Friday, 16 May",
+                name: "Math Paper 2",
+                timestamp: new Date(2025, 4, 16, 9, 0).getTime()
+            },
+            {
+                date: "Friday, 16 May",
+                name: "Chemistry Paper 1",
+                timestamp: new Date(2025, 4, 16, 14, 0).getTime()
+            },
+            {
+                date: "Monday, 19 May",
+                name: "Chemistry Paper 2",
+                timestamp: new Date(2025, 4, 19, 9, 0).getTime()
+            },
+            {
+                date: "Monday, 19 May",
+                name: "Global Politics Paper 1",
+                timestamp: new Date(2025, 4, 19, 14, 0).getTime()
+            },
+            {
+                date: "Tuesday, 20 May",
+                name: "Global Politics Paper 2",
+                timestamp: new Date(2025, 4, 20, 9, 0).getTime()
+            },
+            {
+                date: "Wednesday, 21 May",
+                name: "Math Paper 3 (HL only)",
+                timestamp: new Date(2025, 4, 21, 9, 0).getTime()
+            }
+        ];
+
+        // Populate the exam list
+        const examList = document.getElementById('exam-list');
+        
+        exams.forEach((exam, index) => {
+            const li = document.createElement('li');
+            li.className = 'exam-item';
+            li.style.animationDelay = `${index * 0.08}s`;
+            
+            li.innerHTML = `
+                <div class="exam-date">
+                    ${exam.date}
+                    <span class="date-indicator"></span>
+                </div>
+                <div class="exam-info">
+                    <div class="exam-name">${exam.name}</div>
+                </div>
+                <div class="timer-container" data-timestamp="${exam.timestamp}">
+                    Loading...
+                </div>
+            `;
+            
+            examList.appendChild(li);
+        });
+
+        // Timer functionality
+        function updateTimers() {
+            const now = new Date().getTime();
+            const timerContainers = document.querySelectorAll('.timer-container');
+            
+            timerContainers.forEach(container => {
+                const timestamp = parseInt(container.getAttribute('data-timestamp'));
+                const timeLeft = timestamp - now;
+                
+                if (timeLeft > 0) {
+                    // Calculate days, hours, minutes, seconds
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    
+                    container.innerHTML = `${days}d ${hours}h <br>${minutes}m ${seconds}s`;
+                } else {
+                    container.innerHTML = "Exam Passed";
+                    container.style.backgroundColor = "#555";
+                }
+            });
+        }
+
+        // Update timers immediately and then every second
+        updateTimers();
+        setInterval(updateTimers, 1000);
+
+        // Canvas background with X and O animations
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size to window size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // XO animation class
+        class Symbol {
+            constructor(type) {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = 30 + Math.random() * 30;
+                this.speedX = (Math.random() - 0.5) * 0.8; // Slower speed
+                this.speedY = (Math.random() - 0.5) * 0.8; // Slower speed
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02; // Slower rotation
+                this.type = type; // 'X' or 'O'
+                this.opacity = 0.08 + Math.random() * 0.12; // More subtle opacity
+                
+                // Target position for smooth movement
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.transitionSpeed = 0.005 + Math.random() * 0.01;
+                
+                // Set new target periodically
+                this.setNewTargetInterval = 8000 + Math.random() * 7000;
+                this.lastTargetUpdate = Date.now();
+            }
+            
+            update() {
+                const currentTime = Date.now();
+                
+                // Update target position periodically
+                if (currentTime - this.lastTargetUpdate > this.setNewTargetInterval) {
+                    this.targetX = Math.random() * canvas.width;
+                    this.targetY = Math.random() * canvas.height;
+                    this.lastTargetUpdate = currentTime;
+                }
+                
+                // Move smoothly toward target position
+                this.x += (this.targetX - this.x) * this.transitionSpeed;
+                this.y += (this.targetY - this.y) * this.transitionSpeed;
+                
+                // Rotate slowly
+                this.rotation += this.rotationSpeed;
+                
+                // Bounce off edges
+                if (this.x < 0 || this.x > canvas.width) {
+                    this.targetX = Math.random() * canvas.width;
+                }
+                
+                if (this.y < 0 || this.y > canvas.height) {
+                    this.targetY = Math.random() * canvas.height;
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.font = `${this.size}px 'Comic Neue'`;
+                ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.type, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        // Create a collection of X and O symbols
+        const symbols = [];
+        const symbolCount = 15; // Fewer symbols for cleaner look
+        
+        for (let i = 0; i < symbolCount; i++) {
+            symbols.push(new Symbol(Math.random() > 0.5 ? 'X' : 'O'));
+        }
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw symbols
+            symbols.forEach(symbol => {
+                symbol.update();
+                symbol.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Very subtle mouse interaction effect
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            // Only affect symbols that are very close to the mouse
+            symbols.forEach(symbol => {
+                const dx = mouseX - symbol.x;
+                const dy = mouseY - symbol.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 150) {
+                    // Gentle push away from mouse
+                    const force = (150 - distance) / 150;
+                    symbol.targetX = symbol.x - dx * force * 0.5;
+                    symbol.targetY = symbol.y - dy * force * 0.5;
+                }
+            });
+        }, { passive: true });
+
+        // Discord webhook toggle functionality
+        const discordToggle = document.getElementById('discord-toggle');
+        const discordContent = document.getElementById('discord-content');
+        const toggleArrow = document.querySelector('.toggle-arrow');
+
+        discordToggle.addEventListener('click', () => {
+            discordContent.classList.toggle('open');
+            toggleArrow.classList.toggle('open');
+        });
+
+        // Function to format time remaining
+        function formatTimeRemaining(timestamp) {
+            const now = new Date().getTime();
+            const timeLeft = timestamp - now;
+            
+            if (timeLeft <= 0) {
+                return "Exam Passed";
+            }
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            return `${days}d ${hours}h ${minutes}m remaining`;
+        }
+
+        // Generate image functionality
+        const generateImageBtn = document.getElementById('generate-image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const closePreview = document.getElementById('close-preview');
+        const imagePreview = document.getElementById('image-preview');
+        const downloadImageBtn = document.getElementById('download-image');
+        const shareDiscordBtn = document.getElementById('share-discord');
+
+        generateImageBtn.addEventListener('click', generateExamImage);
+        closePreview.addEventListener('click', () => {
+            imagePreviewContainer.style.display = 'none';
+        });
+// Function to generate the exam schedule image
+function generateExamImage() {
+    // Create a temporary container
+    const tempContainer = document.createElement('div');
+    tempContainer.style.width = '800px';
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.fontFamily = "'Comic Neue', cursive";
+    document.body.appendChild(tempContainer);
+    
+    // Create header
+    const header = document.createElement('div');
+    header.style.textAlign = 'center';
+    header.style.marginBottom = '20px';
+    header.style.padding = '20px';
+    header.style.backgroundColor = '#ffffff';
+    header.style.borderRadius = '20px';
+    header.style.border = '3px solid #000';
+    header.innerHTML = `<h1 style="font-family: 'Bubblegum Sans', cursive; font-size: 48px; color: #000; text-shadow: 3px 3px 0 #fff, 5px 5px 0 #000;">Exams n' Timers</h1>`;
+    tempContainer.appendChild(header);
+    
+    // Sort exams by date
+    const sortedExams = [...exams].sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Group exams by date
+    const examsByDate = {};
+    sortedExams.forEach(exam => {
+        const date = exam.date;
+        if (!examsByDate[date]) {
+            examsByDate[date] = [];
+        }
+        examsByDate[date].push(exam);
+    });
+    
+    // Create exam items grouped by date
+    for (const date in examsByDate) {
+        // Date header
+        const dateHeader = document.createElement('div');
+        dateHeader.style.backgroundColor = '#000';
+        dateHeader.style.color = '#fff';
+        dateHeader.style.padding = '10px 20px';
+        dateHeader.style.borderRadius = '15px';
+        dateHeader.style.marginBottom = '10px';
+        dateHeader.style.fontWeight = 'bold';
+        dateHeader.style.fontSize = '20px';
+        dateHeader.textContent = date;
+        tempContainer.appendChild(dateHeader);
+        
+        // Exams for this date
+        const dateExams = examsByDate[date];
+        dateExams.forEach(exam => {
+            const examItem = document.createElement('div');
+            examItem.style.backgroundColor = '#ffffff';
+            examItem.style.padding = '15px 20px';
+            examItem.style.borderRadius = '15px';
+            examItem.style.marginBottom = '15px';
+            examItem.style.border = '2px solid #000';
+            examItem.style.display = 'flex';
+            examItem.style.justifyContent = 'space-between';
+            examItem.style.alignItems = 'center';
+            
+            const examTime = new Date(exam.timestamp);
+            const hours = examTime.getHours();
+            const minutes = examTime.getMinutes();
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            
+            examItem.innerHTML = `
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: bold; font-size: 18px;">${exam.name}</div>
+                    <div style="font-size: 14px; color: #666;">Starts at ${timeStr}</div>
+                </div>
+                <div style="background-color: #000; color: #fff; padding: 8px 12px; border-radius: 12px; font-weight: bold;">
+                    ${formatTimeRemaining(exam.timestamp)}
+                </div>
+            `;
+            
+            tempContainer.appendChild(examItem);
+        });
+    }
+    
+    // Use html2canvas to generate image
+    html2canvas(tempContainer, {
+        backgroundColor: '#f8f8f8',
+        scale: 2 // For better quality
+    }).then(canvas => {
+        // Remove the temporary container
+        document.body.removeChild(tempContainer);
+        
+        // Display the image in preview
+        const imageUrl = canvas.toDataURL('image/png');
+        imagePreview.src = imageUrl;
+        imagePreviewContainer.style.display = 'flex';
+        
+        // Setup download button
+        downloadImageBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.download = 'exam-schedule.png';
+            link.href = imageUrl;
+            link.click();
+        };
+        
+        // Setup Discord share button
+        shareDiscordBtn.onclick = () => {
+            discordContent.classList.add('open');
+            toggleArrow.classList.add('open');
+            // Scroll to the Discord section
+            document.querySelector('.discord-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Close preview
+            imagePreviewContainer.style.display = 'none';
+        };
+    });
+}
+
+// Function to send exam schedule to Discord webhook
+const sendWebhookBtn = document.getElementById('send-webhook');
+const webhookUrlInput = document.getElementById('webhook-url');
+const webhookUsernameInput = document.getElementById('webhook-username');
+const webhookStatus = document.getElementById('webhook-status');
+
+sendWebhookBtn.addEventListener('click', async () => {
+    const webhookUrl = webhookUrlInput.value.trim();
+    const webhookUsername = webhookUsernameInput.value.trim() || 'Exam Schedule Bot';
+    
+    if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        webhookStatus.textContent = 'Please enter a valid Discord webhook URL';
+        webhookStatus.className = 'webhook-status error';
+        return;
+    }
+    
+    try {
+        // Create an image of the exam schedule
+        const tempContainer = document.createElement('div');
+        tempContainer.style.width = '800px';
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.fontFamily = "'Comic Neue', cursive";
+        document.body.appendChild(tempContainer);
+        
+        // Add title and header
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '20px';
+        header.style.padding = '20px';
+        header.style.backgroundColor = '#ffffff';
+        header.style.borderRadius = '20px';
+        header.style.border = '3px solid #000';
+        header.innerHTML = `<h1 style="font-family: 'Bubblegum Sans', cursive; font-size: 48px; color: #000; text-shadow: 3px 3px 0 #fff, 5px 5px 0 #000;">Exams n' Timers</h1>`;
+        tempContainer.appendChild(header);
+        
+        // Sort exams by date
+        const sortedExams = [...exams].sort((a, b) => a.timestamp - b.timestamp);
+        
+        // Group exams by date
+        const examsByDate = {};
+        sortedExams.forEach(exam => {
+            const date = exam.date;
+            if (!examsByDate[date]) {
+                examsByDate[date] = [];
+            }
+            examsByDate[date].push(exam);
+        });
+        
+        // Create exam items grouped by date
+        for (const date in examsByDate) {
+            // Date header
+            const dateHeader = document.createElement('div');
+            dateHeader.style.backgroundColor = '#000';
+            dateHeader.style.color = '#fff';
+            dateHeader.style.padding = '10px 20px';
+            dateHeader.style.borderRadius = '15px';
+            dateHeader.style.marginBottom = '10px';
+            dateHeader.style.fontWeight = 'bold';
+            dateHeader.style.fontSize = '20px';
+            dateHeader.textContent = date;
+            tempContainer.appendChild(dateHeader);
+            
+            // Exams for this date
+            const dateExams = examsByDate[date];
+            dateExams.forEach(exam => {
+                const examItem = document.createElement('div');
+                examItem.style.backgroundColor = '#ffffff';
+                examItem.style.padding = '15px 20px';
+                examItem.style.borderRadius = '15px';
+                examItem.style.marginBottom = '15px';
+                examItem.style.border = '2px solid #000';
+                examItem.style.display = 'flex';
+                examItem.style.justifyContent = 'space-between';
+                examItem.style.alignItems = 'center';
+                
+                const examTime = new Date(exam.timestamp);
+                const hours = examTime.getHours();
+                const minutes = examTime.getMinutes();
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                
+                examItem.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: bold; font-size: 18px;">${exam.name}</div>
+                        <div style="font-size: 14px; color: #666;">Starts at ${timeStr}</div>
+                    </div>
+                    <div style="background-color: #000; color: #fff; padding: 8px 12px; border-radius: 12px; font-weight: bold;">
+                        ${formatTimeRemaining(exam.timestamp)}
+                    </div>
+                `;
+                
+                tempContainer.appendChild(examItem);
+            });
+        }
+        
+        // Generate image using html2canvas
+        const canvas = await html2canvas(tempContainer, {
+            backgroundColor: '#f8f8f8',
+            scale: 2 // For better quality
+        });
+        
+        // Remove the temporary container
+        document.body.removeChild(tempContainer);
+        
+        // Convert canvas to blob
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        
+        // Create form data for webhook
+        const formData = new FormData();
+        
+        // Create webhook payload
+        const payload = {
+            username: webhookUsername,
+            content: '**Upcoming Exam Schedule** 📝✨'
+        };
+        
+        formData.append('payload_json', JSON.stringify(payload));
+        formData.append('file', blob, 'exam-schedule.png');
+        
+        // Send the webhook
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            webhookStatus.textContent = 'Exam schedule successfully sent to Discord!';
+            webhookStatus.className = 'webhook-status success';
+        } else {
+            throw new Error(`Discord API error: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error sending webhook:', error);
+        webhookStatus.textContent = `Error: ${error.message}`;
+        webhookStatus.className = 'webhook-status error';
+    }
+});
+
+// Add html2canvas library
+(function loadHtml2Canvas() {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.async = true;
+    document.head.appendChild(script);
+})();
+</script>
+</body>
+</html>
