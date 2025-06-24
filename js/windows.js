@@ -50,14 +50,20 @@ export function openWindowAtRandom(title, content) {
 
   makeWindowDraggable(windowEl);
 
-  const closeBtn = windowEl.querySelector('.window-close');
-  closeBtn.addEventListener('click', function () {
-    windowEl.remove();
+const closeBtn = windowEl.querySelector('.window-close');
 
-    if (title === 'Music Player') {
-      musicPlayer = null; 
-    }
-  });
+function closeWindow() {
+  windowEl.remove();
+
+  if (title === 'Music Player') {
+    musicPlayer = null;
+  }
+}
+
+// Add both touch and click support
+closeBtn.addEventListener('click', closeWindow);
+closeBtn.addEventListener('touchstart', closeWindow);
+
 
   return windowEl;
 }
