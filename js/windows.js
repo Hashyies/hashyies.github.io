@@ -87,6 +87,8 @@ function makeWindowDraggable(windowEl) {
   header.addEventListener('touchstart', startDrag);
 
   function startDrag(e) {
+    if (e.target.closest('.window-close')) return;
+
     e.preventDefault();
     isDragging = true;
 
