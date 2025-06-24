@@ -52,24 +52,13 @@ export function openWindowAtRandom(title, content) {
 
   const closeBtn = windowEl.querySelector('.window-close');
 
-  function closeWindow() {
+  closeBtn.addEventListener('click', (e) => {
     windowEl.remove();
 
     if (title === 'Music Player') {
       musicPlayer = null;
     }
-  }
-
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeWindow();
   });
-  closeBtn.addEventListener('touchstart', (e) => {
-    e.stopPropagation();
-    closeWindow();
-  });
-
-
 
   return windowEl;
 }
