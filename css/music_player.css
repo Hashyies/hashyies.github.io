@@ -1,0 +1,203 @@
+/* Music Player Styles */
+.music-player {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.player-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.song-info {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.song-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e0aaff;
+  margin-bottom: 5px;
+  text-shadow: 0 0 10px rgba(224, 170, 255, 0.5);
+}
+
+.song-artist {
+  font-size: 14px;
+  color: #c77dff;
+  text-shadow: 0 0 5px rgba(199, 125, 255, 0.3);
+}
+
+.album-art {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  border: 2px solid #9d4edd;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4),
+              0 0 40px rgba(157, 78, 221, 0.3);
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.album-art:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5),
+              0 0 60px rgba(157, 78, 221, 0.5);
+}
+
+.player-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-btn {
+  background-color: rgba(157, 78, 221, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(157, 78, 221, 0.6);
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #e0aaff;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.play-pause-btn {
+  width: 54px;
+  height: 54px;
+  background-color: rgba(157, 78, 221, 0.6);
+}
+
+.control-btn:hover {
+  background-color: rgba(157, 78, 221, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(157, 78, 221, 0.5);
+}
+
+.control-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  filter: drop-shadow(0 0 3px rgba(224, 170, 255, 0.3));
+}
+
+.play-pause-btn svg {
+  width: 26px;
+  height: 26px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  margin: 12px 0;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, #9d4edd, #c77dff);
+  border-radius: 6px;
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+}
+
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 12px;
+  color: #c77dff;
+  text-shadow: 0 0 3px rgba(199, 125, 255, 0.3);
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.volume-icon {
+  color: #e0aaff;
+  width: 18px;
+  filter: drop-shadow(0 0 3px rgba(224, 170, 255, 0.3));
+}
+
+.volume-slider {
+  flex-grow: 1;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  position: relative;
+  cursor: pointer;
+}
+
+.volume-level {
+  height: 100%;
+  background: linear-gradient(90deg, #9d4edd, #c77dff);
+  border-radius: 5px;
+  width: 70%;
+  box-shadow: 0 0 8px rgba(157, 78, 221, 0.4);
+}
+
+.playlist {
+  margin-top: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background-color: rgba(20, 5, 40, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+}
+
+.playlist-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(157, 78, 221, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.playlist-item:hover {
+  background-color: rgba(157, 78, 221, 0.3);
+}
+
+.playlist-item.active {
+  background-color: rgba(157, 78, 221, 0.4);
+  border-left: 4px solid #c77dff;
+  box-shadow: inset 0 0 10px rgba(157, 78, 221, 0.3);
+}
+
+.playlist-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: 0 0 3px rgba(245, 245, 247, 0.3);
+}
+
+.playlist-item-duration {
+  font-size: 12px;
+  color: #c77dff;
+  text-shadow: 0 0 3px rgba(199, 125, 255, 0.3);
+}

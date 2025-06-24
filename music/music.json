@@ -1,0 +1,39 @@
+{
+  "tracks": [
+    {
+      "title": "Minecraft Dungeons - Halland",
+      "artist": "Johan Johnson",
+      "duration": "4:56",
+      "cover": "./imgs/McDungeons.png",
+      "source": "music/halland.mp3"
+    },
+    {
+      "title": "you're my friend - Yuki Kajiura",
+      "artist": "Yuki Kajiura",
+      "duration": "2:20",
+      "cover": "./imgs/Erased.jpg",
+      "source": "music/youre_my_friend.mp3"
+    },
+    {
+      "title": "Lost my pieces - Emoboi Beatz",
+      "artist": "Emoboi Beatz",
+      "duration": "2:24",
+      "cover": "./imgs/Emoboi.jpg",
+      "source": "music/Lost_my_pieces.mp3"
+    },
+    {
+      "title": "The Place You Promised to Show Me",
+      "artist": "miraie & Milkoi",
+      "duration": "3:57",
+      "cover": "./imgs/the_place_you_promised.jpg",
+      "source": "music/The_Place_You_Promised_To_Show_Me.m4a"
+    },
+    {
+      "title": "Echo in the Wind - Aaron Cherof",
+      "artist": "Aaron Cherof",
+      "duration": "4:56",
+      "cover": "./imgs/echo_in_the_wind.jpg",
+      "source": "music/Echo_in_the_Wind.mp3"
+    }
+  ]
+}
