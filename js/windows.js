@@ -40,29 +40,35 @@ export function openWindowAtRandom(title, content) {
   windowEl.style.left = posX + 'px';
   windowEl.style.top = posY + 'px';
   windowEl.style.visibility = 'visible';
-  
+
   // Set initial z-index and make it the top window
   windowEl.style.zIndex = ++windowZIndex;
 
-  windowEl.addEventListener('mousedown', function() {
+  windowEl.addEventListener('mousedown', function () {
     bringWindowToFront(windowEl);
   });
 
   makeWindowDraggable(windowEl);
 
-const closeBtn = windowEl.querySelector('.window-close');
+  const closeBtn = windowEl.querySelector('.window-close');
 
-function closeWindow() {
-  windowEl.remove();
+  function closeWindow() {
+    windowEl.remove();
 
-  if (title === 'Music Player') {
-    musicPlayer = null;
+    if (title === 'Music Player') {
+      musicPlayer = null;
+    }
   }
-}
 
-// Add both touch and click support
-closeBtn.addEventListener('click', closeWindow);
-closeBtn.addEventListener('touchstart', closeWindow);
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeWindow();
+  });
+  closeBtn.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    closeWindow();
+  });
+
 
 
   return windowEl;
