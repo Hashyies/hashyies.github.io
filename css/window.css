@@ -1,4 +1,3 @@
-/* Pop-up Windows */
 .window {
   position: fixed;
   background-color: rgba(30, 10, 60, 0.95);
@@ -6,12 +5,75 @@
   -webkit-backdrop-filter: blur(20px);
   border: 2px solid rgba(157, 78, 221, 0.8);
   border-radius: 12px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6),
-              0 0 60px rgba(157, 78, 221, 0.3);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 60px rgba(157, 78, 221, 0.3);
   min-width: 300px;
   max-width: 500px;
   z-index: 100;
   overflow: hidden;
+  will-change: transform, opacity;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.window-opening {
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  animation: windowOpen 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes windowOpen {
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.window-closing {
+  opacity: 1;
+  transform: scale(1);
+  animation: windowClose 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes windowClose {
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+}
+
+.window-minimizing {
+  opacity: 1;
+  transform: scale(1);
+  animation: windowMinimize 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes windowMinimize {
+  to {
+    opacity: 0;
+    transform: scale(0.3) translateY(100px);
+  }
+}
+
+.window-restoring {
+  opacity: 0;
+  transform: scale(0.3) translateY(100px);
+  animation: windowRestore 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes windowRestore {
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.window.dragging {
+  transition: none;
+}
+
+.window.minimized {
+  display: none;
 }
 
 .window-header {
@@ -23,19 +85,48 @@
   align-items: center;
   cursor: move;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+.window.dragging .window-header {
+  cursor: grabbing;
+}
+
+.window-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.window-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
 }
 
 .window-title {
   font-size: 16px;
   font-weight: 600;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.window-close {
+.window-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.window-minimize, .window-close {
   background: none;
   border: none;
   color: white;
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -44,11 +135,27 @@
   height: 24px;
   border-radius: 50%;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.window-minimize {
+  font-size: 14px;
+  padding-bottom: 4px;
+}
+
+.window-close {
+  font-size: 20px;
+}
+
+.window-minimize:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
 }
 
 .window-close:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
+  background-color: rgba(255, 100, 100, 0.3);
+  transform: scale(1.05);
 }
 
 .window-content {
@@ -66,4 +173,199 @@
 .window-content a:hover {
   text-decoration: underline;
   color: #c77dff;
+}
+
+.taskbar {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  display: flex;
+  gap: 8px;
+  background: rgba(20, 5, 40, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(157, 78, 221, 0.6);
+  border-radius: 25px;
+  padding: 8px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(157, 78, 221, 0.2);
+  z-index: 10000;
+  max-width: 80vw;
+  overflow-x: auto;
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.taskbar-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: taskbarShow 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.taskbar-hiding {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: taskbarHide 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes taskbarShow {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes taskbarHide {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.9);
+  }
+}
+
+.taskbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.taskbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.taskbar::-webkit-scrollbar-thumb {
+  background: rgba(157, 78, 221, 0.6);
+  border-radius: 2px;
+}
+
+.taskbar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(157, 78, 221, 0.2);
+  border: 1px solid rgba(157, 78, 221, 0.4);
+  border-radius: 16px;
+  color: #f5f5f7;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+  min-width: 0;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.taskbar-item-entering {
+  opacity: 0;
+  transform: scale(0.8);
+  animation: taskbarItemEnter 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes taskbarItemEnter {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.taskbar-item:hover {
+  background: rgba(157, 78, 221, 0.4);
+  border-color: rgba(157, 78, 221, 0.6);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 15px rgba(157, 78, 221, 0.3);
+}
+
+.taskbar-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+}
+
+.taskbar-title {
+  font-size: 13px;
+  font-weight: 500;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.window, .taskbar-item {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+@media (max-width: 768px) {
+  .window {
+    min-width: 280px;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .taskbar {
+    bottom: 5px;
+    max-width: calc(100vw - 20px);
+    padding: 6px 12px;
+  }
+  
+  .taskbar-item {
+    padding: 6px 10px;
+  }
+  
+  .taskbar-title {
+    max-width: 80px;
+  }
+  
+  @keyframes windowOpen {
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  @keyframes windowMinimize {
+    to {
+      opacity: 0;
+      transform: scale(0.4) translateY(80px);
+    }
+  }
+  
+  @keyframes windowRestore {
+    from {
+      opacity: 0;
+      transform: scale(0.4) translateY(80px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .taskbar {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window, .taskbar, .taskbar-item {
+    transition: none;
+    animation: none;
+  }
+  
+  .window-opening, .window-closing, .window-minimizing, .window-restoring, .taskbar-item-entering {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

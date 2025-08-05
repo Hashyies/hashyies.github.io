@@ -34,6 +34,13 @@
       "duration": "4:56",
       "cover": "./imgs/echo_in_the_wind.jpg",
       "source": "music/Echo_in_the_Wind.mp3"
+    },
+    {
+      "title": "Peder B. Helland - A Long Time Ago",
+      "artist": "Peder B. Helland",
+      "duration": "6:50",
+      "cover": "./imgs/Peder B. Helland - A Long Time Ago.jpg",
+      "source": "music/Peder B. Helland - A Long Time Ago.mp3"
     }
   ]
 }

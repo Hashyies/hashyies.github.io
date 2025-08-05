@@ -1,132 +1,224 @@
 let windowZIndex = 1000;
+const minimizedWindows = new Set();
 
-export function openWindowAtRandom(title, content) {
-  const existingWindow = document.querySelector(`.window[data-title="${title}"]`);
-  if (existingWindow) existingWindow.remove();
-
+export function openWindowAtRandom(title, content, iconUrl = null) {
+  document.querySelector(`.window[data-title="${title}"]`)?.remove();
+  
+  const iconHtml = iconUrl ? `<img src="${iconUrl}" alt="" class="window-icon">` : '';
+  
   const windowEl = document.createElement('div');
-  windowEl.className = 'window';
-  windowEl.setAttribute('data-title', title);
-
-  windowEl.innerHTML = `
-    <div class="window-header">
-      <div class="window-title">${title}</div>
-      <button class="window-close">&times;</button>
-    </div>
-    <div class="window-content">${content}</div>
-  `;
-
-  // Temporarily add to DOM with visibility hidden to measure size
-  windowEl.style.visibility = 'hidden';
-  windowEl.style.position = 'absolute';
-  windowEl.style.left = '0px';
-  windowEl.style.top = '0px';
-  document.body.appendChild(windowEl);
-
-  // Get the actual dimensions of the window
-  const windowWidth = windowEl.offsetWidth;
-  const windowHeight = windowEl.offsetHeight;
-
-  // Calculate safe positioning bounds based on actual window size
-  const minMargin = 10; // Minimum distance from edges
-  const maxX = Math.max(minMargin, window.innerWidth - windowWidth - minMargin);
-  const maxY = Math.max(minMargin, window.innerHeight - windowHeight - minMargin);
-
-  // Generate random position within safe bounds
-  const posX = Math.max(minMargin, Math.floor(Math.random() * maxX));
-  const posY = Math.max(minMargin, Math.floor(Math.random() * maxY));
-
-  // Apply the calculated position and make visible
-  windowEl.style.left = posX + 'px';
-  windowEl.style.top = posY + 'px';
-  windowEl.style.visibility = 'visible';
-
-  // Set initial z-index and make it the top window
-  windowEl.style.zIndex = ++windowZIndex;
-
-  windowEl.addEventListener('mousedown', function () {
-    bringWindowToFront(windowEl);
+  Object.assign(windowEl, {
+    className: 'window window-opening',
+    innerHTML: `
+      <div class="window-header">
+        <div class="window-title-container">
+          ${iconHtml}
+          <div class="window-title">${title}</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-minimize" title="Minimize">_</button>
+          <button class="window-close" title="Close">&times;</button>
+        </div>
+      </div>
+      <div class="window-content">${content}</div>
+    `
   });
-
-  makeWindowDraggable(windowEl);
-
-  const closeBtn = windowEl.querySelector('.window-close');
-
-  closeBtn.addEventListener('click', (e) => {
-    windowEl.remove();
-
-    if (title === 'Music Player') {
-      musicPlayer = null;
-    }
-  });
-
+  windowEl.dataset.title = title;
+  
+  positionWindowRandomly(windowEl);
+  
+  setTimeout(() => windowEl.classList.remove('window-opening'), 300);
+  
+  windowEl.addEventListener('mousedown', () => bringToFront(windowEl));
+  windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowEl, title));
+  windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowEl, title));
+  
+  makeDraggable(windowEl);
+  
   return windowEl;
 }
 
-function bringWindowToFront(windowEl) {
+function closeWindow(windowEl, title) {
+  windowEl.classList.add('window-closing');
+  minimizedWindows.delete(title);
+  
+  const taskbarItem = document.querySelector(`.taskbar-item[data-title="${title}"]`);
+  if (taskbarItem) {
+    taskbarItem.remove();
+    updateTaskbarVisibility();
+  }
+  
+  if (title === 'Music Player') {
+    window.musicPlayer = null;
+  }
+  
+  setTimeout(() => windowEl.remove(), 200);
+}
+
+function minimizeWindow(windowEl, title) {
+  windowEl.classList.add('window-minimizing');
+  
+  setTimeout(() => {
+    windowEl.classList.add('minimized');
+    windowEl.classList.remove('window-minimizing');
+    minimizedWindows.add(title);
+    createTaskbarItem(windowEl, title);
+  }, 200);
+}
+
+function restoreWindow(windowEl, title) {
+  windowEl.classList.add('window-restoring');
+  windowEl.classList.remove('minimized');
+  
+  setTimeout(() => {
+    windowEl.classList.remove('window-restoring');
+    minimizedWindows.delete(title);
+    bringToFront(windowEl);
+  }, 200);
+  
+  const taskbarItem = document.querySelector(`.taskbar-item[data-title="${title}"]`);
+  if (taskbarItem) {
+    taskbarItem.remove();
+    updateTaskbarVisibility();
+  }
+}
+
+function createTaskbarItem(windowEl, title) {
+  document.querySelector(`.taskbar-item[data-title="${title}"]`)?.remove();
+  
+  let taskbar = document.querySelector('.taskbar');
+  if (!taskbar) {
+    taskbar = document.createElement('div');
+    taskbar.className = 'taskbar';
+    document.body.appendChild(taskbar);
+  }
+  
+  const iconUrl = windowEl.querySelector('.window-icon')?.src;
+  const iconHtml = iconUrl ? `<img src="${iconUrl}" alt="" class="taskbar-icon">` : '';
+  
+  const taskbarItem = document.createElement('div');
+  taskbarItem.className = 'taskbar-item taskbar-item-entering';
+  taskbarItem.dataset.title = title;
+  taskbarItem.innerHTML = `${iconHtml}<span class="taskbar-title">${title}</span>`;
+  
+  taskbarItem.addEventListener('click', () => restoreWindow(windowEl, title));
+  
+  taskbar.appendChild(taskbarItem);
+  
+  setTimeout(() => taskbarItem.classList.remove('taskbar-item-entering'), 200);
+  
+  updateTaskbarVisibility();
+}
+
+function updateTaskbarVisibility() {
+  const taskbar = document.querySelector('.taskbar');
+  if (!taskbar) return;
+  
+  const items = taskbar.querySelectorAll('.taskbar-item');
+  if (items.length === 0) {
+    taskbar.classList.add('taskbar-hiding');
+    setTimeout(() => {
+      if (taskbar.querySelectorAll('.taskbar-item').length === 0) {
+        taskbar.remove();
+      }
+    }, 300);
+  } else {
+    taskbar.classList.remove('taskbar-hiding');
+    taskbar.classList.add('taskbar-visible');
+  }
+}
+
+function positionWindowRandomly(windowEl) {
+  Object.assign(windowEl.style, {
+    position: 'absolute',
+    visibility: 'hidden',
+    left: '0px',
+    top: '0px',
+    zIndex: ++windowZIndex
+  });
+  
+  document.body.appendChild(windowEl);
+  
+  const { offsetWidth: width, offsetHeight: height } = windowEl;
+  const margin = 10;
+  const maxX = Math.max(margin, window.innerWidth - width - margin);
+  const maxY = Math.max(margin, window.innerHeight - height - margin);
+  
+  Object.assign(windowEl.style, {
+    left: `${Math.max(margin, Math.random() * maxX)}px`,
+    top: `${Math.max(margin, Math.random() * maxY)}px`,
+    visibility: 'visible'
+  });
+}
+
+function bringToFront(windowEl) {
   windowEl.style.zIndex = ++windowZIndex;
 }
 
-function makeWindowDraggable(windowEl) {
+function makeDraggable(windowEl) {
   const header = windowEl.querySelector('.window-header');
-  let isDragging = false;
-  let offsetX, offsetY;
+  let dragState = null;
 
-  header.addEventListener('mousedown', startDrag);
-  header.addEventListener('touchstart', startDrag);
-
-  function startDrag(e) {
-    if (e.target.closest('.window-close')) return;
-
+  const handleStart = (e) => {
+    if (e.target.closest('.window-controls')) return;
+    
     e.preventDefault();
-    isDragging = true;
-
-    bringWindowToFront(windowEl);
-
-    if (e.type === 'mousedown') {
-      offsetX = e.clientX - windowEl.offsetLeft;
-      offsetY = e.clientY - windowEl.offsetTop;
-      document.addEventListener('mousemove', drag);
-      document.addEventListener('mouseup', stopDrag);
-    } else if (e.type === 'touchstart') {
-      offsetX = e.touches[0].clientX - windowEl.offsetLeft;
-      offsetY = e.touches[0].clientY - windowEl.offsetTop;
-      document.addEventListener('touchmove', drag);
-      document.addEventListener('touchend', stopDrag);
-    }
-  }
-
-  function drag(e) {
-    if (!isDragging) return;
+    bringToFront(windowEl);
+    
+    const clientX = e.clientX ?? e.touches[0].clientX;
+    const clientY = e.clientY ?? e.touches[0].clientY;
+    
+    dragState = {
+      offsetX: clientX - windowEl.offsetLeft,
+      offsetY: clientY - windowEl.offsetTop,
+      startX: windowEl.offsetLeft,
+      startY: windowEl.offsetTop
+    };
+    
+    const isTouch = e.type === 'touchstart';
+    const moveEvent = isTouch ? 'touchmove' : 'mousemove';  
+    const endEvent = isTouch ? 'touchend' : 'mouseup';
+    
+    document.addEventListener(moveEvent, handleMove, { passive: false });
+    document.addEventListener(endEvent, handleEnd);
+    
+    windowEl.classList.add('dragging');
+  };
+  
+  const handleMove = (e) => {
+    if (!dragState) return;
+    
     e.preventDefault();
-
-    let clientX, clientY;
-    if (e.type === 'mousemove') {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    } else if (e.type === 'touchmove') {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    }
-
-    let newLeft = clientX - offsetX;
-    let newTop = clientY - offsetY;
-
-    const maxX = window.innerWidth - windowEl.offsetWidth;
-    const maxY = window.innerHeight - windowEl.offsetHeight;
-
-    newLeft = Math.max(0, Math.min(newLeft, maxX));
-    newTop = Math.max(0, Math.min(newTop, maxY));
-
-    windowEl.style.left = newLeft + 'px';
-    windowEl.style.top = newTop + 'px';
-  }
-
-  function stopDrag() {
-    isDragging = false;
-    document.removeEventListener('mousemove', drag);
-    document.removeEventListener('mouseup', stopDrag);
-    document.removeEventListener('touchmove', drag);
-    document.removeEventListener('touchend', stopDrag);
-  }
+    
+    const clientX = e.clientX ?? e.touches[0].clientX;
+    const clientY = e.clientY ?? e.touches[0].clientY;
+    
+    const newLeft = Math.max(0, Math.min(
+      clientX - dragState.offsetX,
+      window.innerWidth - windowEl.offsetWidth
+    ));
+    
+    const newTop = Math.max(0, Math.min(
+      clientY - dragState.offsetY,
+      window.innerHeight - windowEl.offsetHeight
+    ));
+    
+    windowEl.style.left = `${newLeft}px`;
+    windowEl.style.top = `${newTop}px`;
+  };
+  
+  const handleEnd = () => {
+    if (!dragState) return;
+    
+    windowEl.classList.remove('dragging');
+    dragState = null;
+    
+    document.removeEventListener('mousemove', handleMove);
+    document.removeEventListener('mouseup', handleEnd);
+    document.removeEventListener('touchmove', handleMove);
+    document.removeEventListener('touchend', handleEnd);
+  };
+  
+  header.addEventListener('mousedown', handleStart);
+  header.addEventListener('touchstart', handleStart, { passive: false });
 }
