@@ -4,16 +4,13 @@ const ctx = canvas.getContext('2d');
 let width, height;
 let mouse = { x: 0, y: 0, influence: 0 };
 let nodes = [];
-let meteors = [];
-let lastMeteor = 0;
 let time = 0;
 
 const colors = {
   primary: '#e0aaff',
   secondary: '#c77dff',
   accent: '#9d4edd',
-  background: '#0f0f23',
-  meteor: '#ff6b6b'
+  background: '#0f0f23'
 };
 
 function resize() {
@@ -33,7 +30,6 @@ class Node {
     this.life = 1;
     this.pulse = Math.random() * Math.PI * 2;
     this.depth = Math.random() * 0.8 + 0.2;
-    this.connected = [];
     this.driftSpeedX = (Math.random() - 0.5) * 0.1;
     this.driftSpeedY = (Math.random() - 0.5) * 0.1;
     this.driftRange = Math.random() * 20 + 10;
@@ -85,7 +81,6 @@ class Node {
     if (this.y > height - margin) { this.vy -= 0.01; this.y = height - margin; }
 
     this.pulse += this.pulseSpeed || 0.02;
-    this.connected = [];
   }
 
   draw() {
@@ -131,96 +126,6 @@ class Node {
   }
 }
 
-class Meteor {
-  constructor() {
-    this.x = Math.random() * width + width;
-    this.y = Math.random() * height * 0.3;
-    this.vx = -Math.random() * 8 - 4;
-    this.vy = Math.random() * 4 + 2;
-    this.size = Math.random() * 3 + 2;
-    this.life = 1;
-    this.trail = [];
-    this.sparkles = [];
-  }
-
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vy += 0.1;
-
-    // Trail management
-    this.trail.push({ x: this.x, y: this.y, life: 1 });
-    if (this.trail.length > 20) this.trail.shift();
-    this.trail.forEach(point => point.life -= 0.05);
-    this.trail = this.trail.filter(point => point.life > 0);
-
-    // Sparkles
-    if (Math.random() < 0.3) {
-      this.sparkles.push({
-        x: this.x + (Math.random() - 0.5) * 10,
-        y: this.y + (Math.random() - 0.5) * 10,
-        vx: (Math.random() - 0.5) * 2,
-        vy: (Math.random() - 0.5) * 2,
-        life: 1,
-        size: Math.random() * 2 + 1
-      });
-    }
-
-    this.sparkles.forEach(sparkle => {
-      sparkle.x += sparkle.vx;
-      sparkle.y += sparkle.vy;
-      sparkle.life -= 0.02;
-    });
-    this.sparkles = this.sparkles.filter(sparkle => sparkle.life > 0);
-
-    this.life = (this.x > -100 && this.y < height + 100) ? 1 : 0;
-  }
-
-  draw() {
-    ctx.save();
-
-    // Draw trail
-    this.trail.forEach(point => {
-      const alpha = point.life * 0.5;
-      const size = this.size * point.life;
-      ctx.globalAlpha = alpha;
-
-      const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, size * 3);
-      gradient.addColorStop(0, colors.meteor + 'ff');
-      gradient.addColorStop(0.5, colors.meteor + '80');
-      gradient.addColorStop(1, 'transparent');
-
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, size * 3, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Draw sparkles
-    this.sparkles.forEach(sparkle => {
-      ctx.globalAlpha = sparkle.life;
-      ctx.fillStyle = colors.primary;
-      ctx.beginPath();
-      ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Draw meteor core
-    ctx.globalAlpha = 1;
-    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
-    gradient.addColorStop(0, '#ffffff');
-    gradient.addColorStop(0.3, colors.meteor);
-    gradient.addColorStop(1, colors.meteor + '80');
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-  }
-}
-
 function drawConnections() {
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
@@ -253,8 +158,6 @@ function drawConnections() {
         ctx.stroke();
 
         ctx.restore();
-        nodes[i].connected.push(nodes[j]);
-        nodes[j].connected.push(nodes[i]);
       }
     }
   }
@@ -404,7 +307,6 @@ function getRandomEdgePosition() {
   return positions[edge];
 }
 
-
 export function init() {
   resize();
   generateTerrainNodes();
@@ -432,18 +334,6 @@ export function animate() {
 
   drawConnections();
 
-  meteors = meteors.filter(meteor => {
-    meteor.update();
-    meteor.draw();
-    return meteor.life > 0;
-  });
-
-  const now = Date.now();
-  if (Math.random() < 0.001 && now - lastMeteor > 5000) {
-    meteors.push(new Meteor());
-    lastMeteor = now;
-  }
-
   requestAnimationFrame(animate);
 }
 
@@ -466,15 +356,10 @@ window.addEventListener('mousemove', (e) => {
   mouse.influence = Math.min(1, totalInfluence / 10);
 });
 
-window.addEventListener('click', () => {
+window.addEventListener('click', (e) => {
   /*
-  for (let i = 0; i < 3; i++) {
-    const newNode = new Node(
-      mouse.x + (Math.random() - 0.5) * 50,
-      mouse.y + (Math.random() - 0.5) * 50,
-      Math.random() * 3 + 2
-    );
-    newNode.terrainType = 'user-created';
-    nodes.push(newNode);
-  }*/
+  const newNode = new Node(e.clientX, e.clientY, Math.random() * 3 + 2);
+  newNode.terrainType = 'user-created';
+  nodes.push(newNode);
+  */
 });
